@@ -1,4 +1,8 @@
-module.exports = {
+var _ = require('lodash');
+var localConfig = require('./config.local') || {};
+var path = require('path');
+
+module.exports = _.defaults(localConfig, {
 //     backend: {
 //         type: 'remote',
 //         base: 'http://example.com/ffmap/',
@@ -12,7 +16,7 @@ module.exports = {
         interval: 3000
     },
     frontend: {
-        path: __dirname + '/../ffmap-d3/build/'
+        path: path.join(__dirname, 'public')
     },
     database: {
         host: 'db.example.com',
@@ -21,4 +25,4 @@ module.exports = {
     },
 
     port: 8000
-};
+});
