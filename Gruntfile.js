@@ -1,5 +1,11 @@
 module.exports = function (grunt) {
     grunt.initConfig({
+        bump: {
+            options: {
+                push: false
+            },
+            files: ['package.json']
+        },
         jscs: {
             options: {
                 config: '.jscsrc'
@@ -30,6 +36,7 @@ module.exports = function (grunt) {
         }
     });
 
+    grunt.loadNpmTasks('grunt-bump');
     grunt.loadNpmTasks('grunt-jscs');
     grunt.loadNpmTasks('grunt-contrib-watch');
 
