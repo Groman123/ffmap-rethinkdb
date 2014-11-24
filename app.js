@@ -1,7 +1,8 @@
+'use strict';
+
 var r = require('rethinkdb');
 var express = require('express');
 var socketio = require('socket.io');
-var Promise = require('es6-promise').Promise;
 
 var config = require('./config');
 var db = require('./ffmap/db');
@@ -31,17 +32,18 @@ db.init(config).then(function () {
 });
 
 io.sockets.on('connection', function (socket) {
+    var self = this;
     function refresh (key) {
         key = key || 'nodes';
         r.connect(config.database).then(function (c) {
-            this.connection = c;
+            self.connection = c;
             return r.table('currentNetwork')
                 .get(key + '.json')
                 .run(c);
         }).then(function (data) {
             socket.emit('refresh', data);
         }).then(function () {
-            this.connection.close();
+            self.connection.close();
         });
     }
 

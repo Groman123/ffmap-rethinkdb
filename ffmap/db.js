@@ -1,3 +1,5 @@
+'use strict';
+
 var r = require('rethinkdb');
 var Promise = require('es6-promise').Promise;
 
@@ -7,8 +9,8 @@ var log = function (msg) {
     return function () {
         logger.debug(msg);
         return arguments;
-    }
-}
+    };
+};
 
 function init(config) {
     return r.connect(config.database).then(function (c) {

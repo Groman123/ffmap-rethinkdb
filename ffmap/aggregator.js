@@ -1,3 +1,5 @@
+'use strict';
+
 var request = require('request');
 var r = require('rethinkdb');
 var Promise = require('es6-promise').Promise;
@@ -21,11 +23,11 @@ var Aggregator = function Aggregator(options) {
             .table('currentNetwork')
             .replace(json, { returnChanges: false })
             .run(self.connection);
-    }
+    };
 
     this.finish = function finish(res) {
-        if (this.connection && this.connection.open) {
-            this.connection.close();
+        if (self.connection && self.connection.open) {
+            self.connection.close();
         }
         return res;
     };

@@ -1,10 +1,20 @@
 module.exports = function (grunt) {
+    'use strict';
+
     grunt.initConfig({
         bump: {
             options: {
                 push: false
             },
             files: ['package.json']
+        },
+        eslint: {
+            sources: {
+                src: ['*.js', '!Gruntfile.js', 'util/**/*.js', 'ffmap/**/*.js']
+            },
+            grunt: {
+                src: ['Gruntfile.js']
+            }
         },
         jscs: {
             options: {
@@ -37,10 +47,11 @@ module.exports = function (grunt) {
     });
 
     grunt.loadNpmTasks('grunt-bump');
+    grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-jscs');
     grunt.loadNpmTasks('grunt-contrib-watch');
 
-    grunt.registerTask('lint', ['jscs']);
+    grunt.registerTask('lint', ['eslint', 'jscs']);
     grunt.registerTask('build', []);
     grunt.registerTask('test', []);
 
