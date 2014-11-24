@@ -4,6 +4,7 @@
   "description": "Socket.io middleware between ffmap-backend and ffmap-d3 using rethinkDB",
   "main": "index.js",
   "scripts": {
+    "start": "node app",
     "test": "grunt"
   },
   "keywords": [

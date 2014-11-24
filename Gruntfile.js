@@ -13,7 +13,7 @@ module.exports = function (grunt) {
                 src: ['*.js', '!Gruntfile.js', 'util/**/*.js', 'ffmap/**/*.js']
             },
             grunt: {
-                src: ['Gruntfile.js']
+                src: ['Gruntfile.js', 'tasks/**/*.js']
             }
         },
         jscs: {
@@ -27,14 +27,14 @@ module.exports = function (grunt) {
             },
             grunt: {
                 files: {
-                    src: ['Gruntfile.js']
+                    src: ['Gruntfile.js', 'tasks/**/*.js']
                 }
             }
         },
         watch: {
             app: {
                 files: ['*.js', 'ffmap/**/*.js', '!Gruntfile.js'],
-                tasks: ['default']
+                tasks: ['default', 'docker:reload']
             },
             grunt: {
                 options: {
@@ -50,6 +50,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-jscs');
     grunt.loadNpmTasks('grunt-contrib-watch');
+
+    grunt.loadTasks('tasks');
 
     grunt.registerTask('lint', ['eslint', 'jscs']);
     grunt.registerTask('build', []);
