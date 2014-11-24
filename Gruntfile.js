@@ -33,7 +33,7 @@ module.exports = function (grunt) {
         },
         watch: {
             app: {
-                files: ['*.js', 'ffmap/**/*.js', '!Gruntfile.js'],
+                files: ['*.js', 'ffmap/**/*.js', 'util/**/*.js', '!Gruntfile.js'],
                 tasks: ['default', 'docker:reload']
             },
             grunt: {
