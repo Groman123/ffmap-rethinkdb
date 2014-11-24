@@ -38,7 +38,7 @@ var Aggregator = function Aggregator(options) {
         self.config = config || self.config;
         return r.connect(config.database).then(function (c) {
             self.connection = c;
-            return config.backend.endpoints.map(function (id) {
+            return Promise.all(config.backend.endpoints.map(function (id) {
                 return self.fetchData(config.backend.base + '/' + id)
                     .then(self.parseJSON)
                     .then(function addMetaDataData(json) {
@@ -49,7 +49,7 @@ var Aggregator = function Aggregator(options) {
                         return json;
                     })
                     .then(self.writeJSON);
-            });
+            }));
         }).then(self.finish);
     };
 };
