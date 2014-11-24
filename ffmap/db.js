@@ -2,9 +2,10 @@ var r = require('rethinkdb');
 var Promise = require('es6-promise').Promise;
 
 var noop = function () {};
+var logger = require('../util/logger');
 var log = function (msg) {
     return function () {
-        console.log('Created', msg);
+        logger.debug(msg);
         return arguments;
     }
 }
@@ -13,7 +14,7 @@ function init(config) {
     return r.connect(config.database).then(function (c) {
         var op = r.dbCreate(config.database.db)
             .run(c)
-            .then(log('database "' + config.database.db + '"'), noop);
+            .then(log('Created database "' + config.database.db + '"'), noop);
         return Promise.all([c, op]);
     }).then(function (res) {
         var c = res[0];
@@ -22,15 +23,15 @@ function init(config) {
 
         ops.push(r.tableCreate('nodes')
             .run(c)
-            .then(log('table "nodes"'), noop)
+            .then(log('Created table "nodes"'), noop)
         );
         ops.push(r.tableCreate('graph')
             .run(c)
-            .then(log('table "graph"'), noop)
+            .then(log('Created table "graph"'), noop)
         );
         ops.push(r.tableCreate('currentNetwork')
             .run(c)
-            .then(log('table "currentNetwork"'), noop)
+            .then(log('Created table "currentNetwork"'), noop)
         );
 
         return Promise.all(ops);

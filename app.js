@@ -5,6 +5,7 @@ var Promise = require('es6-promise').Promise;
 
 var config = require('./config');
 var db = require('./ffmap/db');
+var logger = require('./util/logger');
 
 var app = express();
 app.use(express.static(config.frontend.path));
@@ -15,9 +16,11 @@ db.init(config).then(function () {
     var penality = 1;
     function setup() {
         fetchData(config).then(function () {
+            logger.info('Received data and stored to DB');
             penality = 1;
         }, function () {
             penality = penality * 2;
+            logger.warn('Problem fetching data or storing in DB');
         });
         setTimeout(function () {
             setup();
