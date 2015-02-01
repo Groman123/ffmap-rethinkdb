@@ -21,8 +21,8 @@ var defaultConfig = {
         path: path.join(__dirname, 'public')
     },
     database: {
-        host: 'db.example.com',
-        port: '28015',
+        host: 'rethinkdb',
+        port: 28015,
         db: 'ffmap'
     },
 
