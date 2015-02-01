@@ -1,5 +1,7 @@
 # ffmap-rethinkdb
 
+[![Build Status](https://travis-ci.org/johnyb/ffmap-rethinkdb.svg)](https://travis-ci.org/johnyb/ffmap-rethinkdb)
+
 A middleware to store ffmap-backend data into a rethinkdb and serve it via a socket.io based API.
 
 ## Development
