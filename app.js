@@ -13,22 +13,24 @@ app.use(express.static(config.frontend.path));
 var io = socketio.listen(app.listen(config.port), { log: false });
 
 db.init(config).then(function () {
-    var fetchData = require('./ffmap/aggregator').for(config.backend.type);
-    var penality = 1;
-    function setup() {
-        fetchData(config).then(function () {
-            logger.info('Received data and stored to DB');
-            penality = 1;
-        }, function () {
-            penality = penality * 2;
-            logger.warn('Problem fetching data or storing in DB');
-        });
-        setTimeout(function () {
-            setup();
-        }, config.backend.interval * penality);
-    }
+    config.dataSources.forEach(function (src) {
+        var aggregate = require('./ffmap/aggregator').for(src.type).aggregate;
+        var penality = 1;
+        function setup() {
+            aggregate(src, config.database).then(function () {
+                logger.info('Received data and stored to DB');
+                penality = 1;
+            }, function () {
+                penality = penality * 2;
+                logger.warn('Problem fetching data or storing in DB');
+            });
+            setTimeout(function () {
+                setup();
+            }, src.interval * penality);
+        }
 
-    setup();
+        setup();
+    });
 });
 
 (new (function importData() {
