@@ -10,7 +10,7 @@ module.exports = function (grunt) {
         },
         eslint: {
             sources: {
-                src: ['*.js', '!Gruntfile.js', 'util/**/*.js', 'ffmap/**/*.js']
+                src: ['*.js', '!Gruntfile.js', 'util/**/*.js', 'ffmap/**/*.js', 'spec/**/*.js']
             },
             grunt: {
                 src: ['Gruntfile.js', 'tasks/**/*.js']
@@ -22,7 +22,7 @@ module.exports = function (grunt) {
             },
             app: {
                 files: {
-                    src: ['*.js', 'ffmap/**/*.js', '!Gruntfile.js']
+                    src: ['*.js', 'ffmap/**/*.js', '!Gruntfile.js', 'spec/**/*.js']
                 }
             },
             grunt: {
@@ -31,10 +31,24 @@ module.exports = function (grunt) {
                 }
             }
         },
+        mochacli: {
+            spec: {
+                options: {
+                    reporter: 'spec'
+                },
+                files: [{
+                    src: ['spec/**/*_spec.js']
+                }]
+            }
+        },
         watch: {
             app: {
                 files: ['*.js', 'ffmap/**/*.js', 'util/**/*.js', '!Gruntfile.js'],
                 tasks: ['default', 'docker:reload']
+            },
+            spec: {
+                files: ['spec/**/*'],
+                tasks: ['lint', 'test']
             },
             grunt: {
                 options: {
@@ -49,13 +63,14 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-bump');
     grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-jscs');
+    grunt.loadNpmTasks('grunt-mocha-cli');
     grunt.loadNpmTasks('grunt-contrib-watch');
 
     grunt.loadTasks('tasks');
 
     grunt.registerTask('lint', ['eslint', 'jscs']);
     grunt.registerTask('build', []);
-    grunt.registerTask('test', []);
+    grunt.registerTask('test', ['mochacli']);
 
     grunt.registerTask('default', ['lint', 'build', 'test']);
 };
