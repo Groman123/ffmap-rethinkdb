@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node app",
-    "test": "grunt"
+    "test": "node -e \"require('grunt').cli()\""
   },
   "keywords": [
     "freifunk",
