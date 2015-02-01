@@ -1,5 +1,14 @@
 var _ = require('lodash');
-var localConfig = require('./config.local') || {};
+var localConfig = {};
+try {
+    localConfig = require('./config.local');
+} catch (e) {
+    console.log(e.code === 'MODULE_NOT_FOUND');
+    if (e.code !== 'MODULE_NOT_FOUND' || e.message.indexOf('config.local') < 0) {
+        //config.local module is broken, rethrow the exception
+        throw e;
+    }
+}
 var path = require('path');
 
 var defaultConfig = {
