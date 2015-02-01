@@ -19,7 +19,7 @@ var Aggregator = function Aggregator(options) {
     };
 
     this.writeJSON = function (json) {
-        return r.db(self.config.database.db)
+        return r.db(self.dbConfig.db)
             .table('currentNetwork')
             .replace(json, { returnChanges: false })
             .run(self.connection);
@@ -34,12 +34,12 @@ var Aggregator = function Aggregator(options) {
 
     _.merge(this, options);
 
-    return function aggregate(config) {
-        self.config = config || self.config;
-        return r.connect(config.database).then(function (c) {
+    this.aggregate = function aggregate(backend, dbConfig) {
+        self.dbConfig = dbConfig || self.dbConfig;
+        return r.connect(dbConfig).then(function (c) {
             self.connection = c;
-            return Promise.all(config.backend.endpoints.map(function (id) {
-                return self.fetchData(config.backend.base + '/' + id)
+            return Promise.all(backend.endpoints.map(function (id) {
+                return self.fetchData(backend.base + '/' + id)
                     .then(self.parseJSON)
                     .then(function addMetaDataData(json) {
                         json.id = id;
