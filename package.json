@@ -2,6 +2,9 @@
   "name": "ffmap-rethinkdb",
   "version": "0.0.0",
   "description": "Socket.io middleware between ffmap-backend and ffmap-d3 using rethinkDB",
+  "repository": {
+    "url": "https://github.com/johnyb/ffmap-rethinkdb/"
+  },
   "main": "index.js",
   "scripts": {
     "start": "node app",
