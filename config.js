@@ -22,7 +22,7 @@ var defaultConfig = {
     },
     database: {
         host: 'rethinkdb',
-        port: 28015,
+        port: '28015',
         db: 'ffmap'
     },
 
