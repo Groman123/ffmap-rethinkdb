@@ -18,6 +18,29 @@ var Aggregator = function Aggregator(options) {
         return Promise.resolve(data);
     };
 
+    this.normalize = function normalize(json) {
+        if (json.nodes) {
+            json.nodes = json.nodes.map(function (node) {
+                node.nodeinfo = node.nodeinfo || {};
+                if (_.isArray(node.geo) && node.geo.length === 2) {
+                    node.nodeinfo.location = {
+                        latitude: node.geo[0],
+                        longitude: node.geo[1]
+                    };
+                    delete node.geo;
+                }
+                if (node.firmware) {
+                    node.nodeinfo.software = node.nodeinfo.software || {
+                        firmware: node.firmware
+                    };
+                    delete node.firmware;
+                }
+                return node;
+            });
+        }
+        return json;
+    };
+
     this.writeJSON = function (json) {
         return r.db(self.dbConfig.db)
             .table('currentNetwork')
@@ -48,6 +71,7 @@ var Aggregator = function Aggregator(options) {
                         }
                         return json;
                     })
+                    .then(self.normalize)
                     .then(self.writeJSON);
             }));
         }).then(self.finish);
