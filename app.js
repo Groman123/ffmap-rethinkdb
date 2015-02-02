@@ -69,18 +69,28 @@ io.sockets.on('connection', function (socket) {
     var self = this;
     function refresh (key) {
         key = key || 'nodes';
-        r.connect(config.database).then(function (c) {
+        return r.connect(config.database).then(function (c) {
             self.connection = c;
-            return r.table('currentNetwork')
-                .get(key + '.json')
+            return r.table('nodes')
                 .run(c);
         }).then(function (data) {
-            socket.emit('refresh', data);
-        }).then(function () {
-            self.connection.close();
+            socket.emit('nodes:reset');
+            data.each(function (err, n) {
+                if (err) {
+                    logger.warn(err);
+                }
+                socket.emit('nodes:add', n);
+            });
         });
     }
 
     socket.on('refresh', refresh);
-    refresh();
+    refresh().then(function () {
+        return r.table('nodes')
+            .changes()
+            .run(self.connection);
+    }).then(function (data) {
+        //FIXME: this is broken, I guess
+        socket.emit('nodes:update', data);
+    });
 });
