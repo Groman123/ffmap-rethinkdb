@@ -27,9 +27,9 @@ function init(config) {
             .run(c)
             .then(log('Created table "nodes"'), noop)
         );
-        ops.push(r.tableCreate('graph')
+        ops.push(r.tableCreate('links')
             .run(c)
-            .then(log('Created table "graph"'), noop)
+            .then(log('Created table "links"'), noop)
         );
         ops.push(r.tableCreate('currentNetwork')
             .run(c)
