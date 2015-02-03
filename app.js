@@ -59,6 +59,14 @@ db.init(config).then(function () {
                                 conflict: 'update'
                             }).run(self.connection);
                         }
+                        if (n.links) {
+                            for (id in n.links) {
+                                var link = n.links[id];
+                                r.table('links').insert(link, {
+                                    conflict: 'update'
+                                }).run(self.connection);
+                            }
+                        }
                     });
                 });
         });
@@ -71,16 +79,28 @@ io.sockets.on('connection', function (socket) {
         key = key || 'nodes';
         return r.connect(config.database).then(function (c) {
             self.connection = c;
-            return r.table('nodes')
-                .run(c);
-        }).then(function (data) {
-            socket.emit('nodes:reset');
-            data.each(function (err, n) {
-                if (err) {
-                    logger.warn(err);
-                }
-                socket.emit('nodes:add', n);
-            });
+            r.table('nodes')
+                .run(c).then(function (data) {
+                    socket.emit('nodes:reset');
+                    data.each(function (err, n) {
+                        if (err) {
+                            logger.warn(err);
+                            return;
+                        }
+                        socket.emit('nodes:add', n);
+                    });
+                });
+            r.table('links')
+                .run(c).then(function (data) {
+                    socket.emit('links:reset');
+                    data.each(function (err, l) {
+                        if (err) {
+                            logger.warn(err);
+                            return;
+                        }
+                        socket.emit('links.add', l);
+                    });
+                });
         });
     }
 
@@ -96,6 +116,18 @@ io.sockets.on('connection', function (socket) {
                         return;
                     }
                     socket.emit('nodes:update', node);
+                });
+            });
+        r.table('links')
+            .changes()
+            .run(self.connection).then(function (data) {
+                data.each(function (err, link) {
+                    if (err) {
+                        logger.warn(err);
+                        //just ignore error
+                        return;
+                    }
+                    socket.emit('links:update', link);
                 });
             });
     });
