@@ -86,11 +86,17 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('refresh', refresh);
     refresh().then(function () {
-        return r.table('nodes')
+        r.table('nodes')
             .changes()
-            .run(self.connection);
-    }).then(function (data) {
-        //FIXME: this is broken, I guess
-        socket.emit('nodes:update', data);
+            .run(self.connection).then(function (data) {
+                data.each(function (err, node) {
+                    if (err) {
+                        logger.warn(err);
+                        //just ignore error
+                        return;
+                    }
+                    socket.emit('nodes:update', node);
+                });
+            });
     });
 });
