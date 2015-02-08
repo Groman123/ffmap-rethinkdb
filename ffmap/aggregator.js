@@ -30,9 +30,8 @@ var Aggregator = function Aggregator(options) {
                     delete node.geo;
                 }
                 if (node.firmware) {
-                    node.nodeinfo.software = node.nodeinfo.software || {
-                        firmware: node.firmware
-                    };
+                    node.nodeinfo.software = node.nodeinfo.software || {};
+                    node.nodeinfo.software.firmware = node.firmware;
                     delete node.firmware;
                 }
                 return node;
