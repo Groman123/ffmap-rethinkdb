@@ -41,10 +41,25 @@ var Aggregator = function Aggregator(options) {
     };
 
     this.writeJSON = function (json) {
+        var meta = {
+            id: json.id,
+            meta: json.meta
+        };
         return r.db(self.dbConfig.db)
             .table('currentNetwork')
-            .replace(json, { returnChanges: false })
-            .run(self.connection);
+            .insert(meta, { returnChanges: false, conflict: 'replace' })
+            .run(self.connection)
+            .then(function () {
+                return r.db(self.dbConfig.db)
+                    .table('nodes')
+                    .insert(json.nodes || [], { returnChanges: false, conflict: 'update' })
+                    .run(self.connection);
+            }).then(function () {
+                return r.db(self.dbConfig.db)
+                    .table('links')
+                    .insert(json.links || [], { returnChanges: false, conflict: 'update' })
+                    .run(self.connection);
+            });
     };
 
     this.finish = function finish(res) {
@@ -64,7 +79,7 @@ var Aggregator = function Aggregator(options) {
                 return self.fetchData(backend.base + '/' + id)
                     .then(self.parseJSON)
                     .then(function addMetaDataData(json) {
-                        json.id = id;
+                        json.id = backend.base + '/' + id;
                         if (!json.timestamp) {
                             json.timestamp = new Date().toISOString();
                         }

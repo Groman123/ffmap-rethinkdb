@@ -33,46 +33,6 @@ db.init(config).then(function () {
     });
 });
 
-(new (function importData() {
-    var self = this;
-
-    return function () {
-        return r.connect(config.database).then(function (c) {
-            self.connection = c;
-            c.use(config.database.db);
-
-            return r.table('currentNetwork')
-                .get('nodes.json')
-                .changes()
-                .run(c)
-                .then(function (res) {
-                    return res.each(function (err, n) {
-                        if (err) {
-                            logger.warn(err);
-                            throw err;
-                        }
-                        var nodes = n.nodes;
-                        for (var id in nodes) {
-                            var node = nodes[id];
-                            node.id = id;
-                            r.table('nodes').insert(node, {
-                                conflict: 'update'
-                            }).run(self.connection);
-                        }
-                        if (n.links) {
-                            for (id in n.links) {
-                                var link = n.links[id];
-                                r.table('links').insert(link, {
-                                    conflict: 'update'
-                                }).run(self.connection);
-                            }
-                        }
-                    });
-                });
-        });
-    };
-})())();
-
 io.sockets.on('connection', function (socket) {
     var self = this;
     function refresh (key) {
