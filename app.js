@@ -82,23 +82,46 @@ io.sockets.on('connection', function (socket) {
             r.table('nodes')
                 .run(c).then(function (data) {
                     socket.emit('nodes:reset');
-                    data.each(function (err, n) {
+                    data.toArray(function (err, nodes) {
                         if (err) {
                             logger.warn(err);
                             return;
                         }
-                        socket.emit('nodes:add', n);
+                        //split into bunches of 100 nodes and send it
+                        nodes.reduce(function (acc, node) {
+                            var n = acc[acc.length - 1];
+                            if (n.length < 100) {
+                                n.push(node);
+                            } else {
+                                acc.push([node]);
+                            }
+                            return acc;
+                        }, [[]]).forEach(function (n) {
+                            socket.emit('nodes:add', n);
+                        });
                     });
                 });
             r.table('links')
                 .run(c).then(function (data) {
                     socket.emit('links:reset');
-                    data.each(function (err, l) {
+                    data.toArray(function (err, links) {
                         if (err) {
                             logger.warn(err);
                             return;
                         }
-                        socket.emit('links.add', l);
+                        //FIXME: be more DRY!
+                        //split into bunches of 100 nodes and send it
+                        links.reduce(function (acc, link) {
+                            var l = acc[acc.length - 1];
+                            if (l.length < 100) {
+                                l.push(link);
+                            } else {
+                                acc.push([link]);
+                            }
+                            return acc;
+                        }, [[]]).forEach(function (l) {
+                            socket.emit('links.add', l);
+                        });
                     });
                 });
         });
