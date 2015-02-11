@@ -37,6 +37,35 @@ var Aggregator = function Aggregator(options) {
                 return node;
             });
         }
+        if (json.links) {
+            json.links = json.links.map(function (link) {
+                if (!link.type) {
+                    link.type = 'node';
+                }
+                if (json.nodes &&
+                    json.nodes[link.target] &&
+                    json.nodes[link.target].nodeinfo.location &&
+                    json.nodes[link.target].nodeinfo.location.type === 'Point' &&
+                    json.nodes[link.source] &&
+                    json.nodes[link.source].nodeinfo.location &&
+                    json.nodes[link.source].nodeinfo.location.type === 'Point')
+                {
+                    var geo = {
+                        type: 'LineString',
+                        coordinates: [
+                            json.nodes[link.source].nodeinfo.location.coordinates,
+                            json.nodes[link.target].nodeinfo.location.coordinates
+                        ]
+                    };
+                    link.geometry = geo;
+                }
+
+                link.target = json.nodes && json.nodes[link.target].id || link.target;
+                link.source = json.nodes && json.nodes[link.source].id || link.source;
+
+                return link;
+            });
+        }
         return json;
     };
 
