@@ -37,11 +37,11 @@ io.sockets.on('connection', function (socket) {
     var self = this;
     function refresh (key) {
         key = key || 'nodes';
-        return r.connect(config.database).then(function (c) {
-            self.connection = c;
-            r.table('nodes')
-                .run(c).then(function (data) {
-                    socket.emit('nodes:reset');
+
+        return function () {
+            r.table(key)
+                .run(self.connection).then(function (data) {
+                    socket.emit(key + ':reset');
                     data.toArray(function (err, nodes) {
                         if (err) {
                             logger.warn(err);
@@ -57,38 +57,17 @@ io.sockets.on('connection', function (socket) {
                             }
                             return acc;
                         }, [[]]).forEach(function (n) {
-                            socket.emit('nodes:add', n);
+                            socket.emit(key + ':add', n);
                         });
                     });
                 });
-            r.table('links')
-                .run(c).then(function (data) {
-                    socket.emit('links:reset');
-                    data.toArray(function (err, links) {
-                        if (err) {
-                            logger.warn(err);
-                            return;
-                        }
-                        //FIXME: be more DRY!
-                        //split into bunches of 100 nodes and send it
-                        links.reduce(function (acc, link) {
-                            var l = acc[acc.length - 1];
-                            if (l.length < 100) {
-                                l.push(link);
-                            } else {
-                                acc.push([link]);
-                            }
-                            return acc;
-                        }, [[]]).forEach(function (l) {
-                            socket.emit('links.add', l);
-                        });
-                    });
-                });
-        });
+        };
     }
 
-    socket.on('refresh', refresh);
-    refresh().then(function () {
+    socket.on('refresh:nodes', refresh('nodes'));
+    socket.on('refresh:links', refresh('links'));
+    r.connect(config.database).then(function (c) {
+        self.connection = c;
         r.table('nodes')
             .changes()
             .run(self.connection).then(function (data) {
