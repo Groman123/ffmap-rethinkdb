@@ -24,8 +24,8 @@ var Aggregator = function Aggregator(options) {
                 node.nodeinfo = node.nodeinfo || {};
                 if (_.isArray(node.geo) && node.geo.length === 2) {
                     node.nodeinfo.location = {
-                        latitude: node.geo[0],
-                        longitude: node.geo[1]
+                        type: 'Point',
+                        coordinates: [node.geo[1], node.geo[0]]
                     };
                     delete node.geo;
                 }
