@@ -3,6 +3,7 @@
 var r = require('rethinkdb');
 var express = require('express');
 var socketio = require('socket.io');
+var _ = require('lodash');
 
 var config = require('./config');
 var db = require('./ffmap/db');
@@ -63,34 +64,43 @@ io.sockets.on('connection', function (socket) {
                 });
         };
     }
+    function watch (key) {
+        key = key || 'nodes';
 
-    socket.on('refresh:nodes', refresh('nodes'));
-    socket.on('refresh:links', refresh('links'));
-    r.connect(config.database).then(function (c) {
-        self.connection = c;
-        r.table('nodes')
+        var sendUpdate = _.throttle(function (updates, cb) {
+            socket.emit(key + ':update', updates);
+            cb();
+        }, 200, { leading: false });
+        r.table(key)
             .changes()
             .run(self.connection).then(function (data) {
+                var updates = [];
                 data.each(function (err, node) {
                     if (err) {
                         logger.warn(err);
                         //just ignore error
                         return;
                     }
-                    socket.emit('nodes:update', node);
-                });
-            });
-        r.table('links')
-            .changes()
-            .run(self.connection).then(function (data) {
-                data.each(function (err, link) {
-                    if (err) {
-                        logger.warn(err);
-                        //just ignore error
-                        return;
+                    if (node.old_val === null) {
+                        socket.emit(key + ':add', node.new_val);
+                    } else if (node.new_val === null) {
+                        socket.emit(key + ':remove', node.old_val.id);
+                    } else if (node.new_val && node.old_val) {
+                        updates.push(node.new_val);
                     }
-                    socket.emit('links:update', link);
+                    sendUpdate(updates, function () {
+                        updates = [];
+                    });
                 });
             });
+    }
+
+    socket.on('refresh:nodes', refresh('nodes'));
+    socket.on('refresh:links', refresh('links'));
+    r.connect(config.database).then(function (c) {
+        self.connection = c;
+
+        watch('nodes');
+        watch('links');
     });
 });
