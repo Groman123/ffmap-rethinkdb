@@ -23,10 +23,10 @@ var Aggregator = function Aggregator(options) {
             json.nodes = json.nodes.map(function (node) {
                 node.nodeinfo = node.nodeinfo || {};
                 if (_.isArray(node.geo) && node.geo.length === 2) {
-                    node.nodeinfo.location = {
+                    node.nodeinfo.location = r.geojson({
                         type: 'Point',
                         coordinates: [node.geo[1], node.geo[0]]
-                    };
+                    });
                     delete node.geo;
                 }
                 if (node.firmware) {
@@ -34,6 +34,7 @@ var Aggregator = function Aggregator(options) {
                     node.nodeinfo.software.firmware = node.firmware;
                     delete node.firmware;
                 }
+                node.neighbours = [];
                 return node;
             });
         }
@@ -44,20 +45,10 @@ var Aggregator = function Aggregator(options) {
                 }
                 if (json.nodes &&
                     json.nodes[link.target] &&
-                    json.nodes[link.target].nodeinfo.location &&
-                    json.nodes[link.target].nodeinfo.location.type === 'Point' &&
-                    json.nodes[link.source] &&
-                    json.nodes[link.source].nodeinfo.location &&
-                    json.nodes[link.source].nodeinfo.location.type === 'Point')
+                    json.nodes[link.source])
                 {
-                    var geo = {
-                        type: 'LineString',
-                        coordinates: [
-                            json.nodes[link.source].nodeinfo.location.coordinates,
-                            json.nodes[link.target].nodeinfo.location.coordinates
-                        ]
-                    };
-                    link.geometry = geo;
+                    json.nodes[link.target].neighbours.push(json.nodes[link.source].id);
+                    json.nodes[link.source].neighbours.push(json.nodes[link.target].id);
                 }
 
                 link.target = json.nodes && json.nodes[link.target].id || link.target;
