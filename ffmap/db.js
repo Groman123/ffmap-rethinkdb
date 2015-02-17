@@ -35,6 +35,10 @@ function init(config) {
             .run(c)
             .then(log('Created table "currentNetwork"'), noop)
         );
+        ops.push(r.table('nodes').indexCreate('location', r.row('nodeinfo')('location'), { geo: true })
+            .run(c)
+            .then(log('Created index on nodeinfo.location for nodes table'), noop)
+        );
 
         return Promise.all(ops);
     }).then(function closeConnection(res) {
