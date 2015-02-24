@@ -35,6 +35,7 @@ var Aggregator = function Aggregator(options) {
                     delete node.firmware;
                 }
                 node.neighbours = [];
+                node.timestamp = r.now();
                 return node;
             });
         }
@@ -53,6 +54,7 @@ var Aggregator = function Aggregator(options) {
 
                 link.target = json.nodes && json.nodes[link.target].id || link.target;
                 link.source = json.nodes && json.nodes[link.source].id || link.source;
+                link.timestamp = r.now();
 
                 return link;
             });

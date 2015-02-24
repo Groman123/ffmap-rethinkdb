@@ -41,6 +41,8 @@ io.sockets.on('connection', function (socket) {
 
         return function () {
             r.table(key)
+                //get rid of datasets older than 1h
+                .filter(r.row('timestamp').gt(r.now().sub(60 * 60)))
                 .run(self.connection).then(function (data) {
                     socket.emit(key + ':reset');
                     data.toArray(function (err, nodes) {
