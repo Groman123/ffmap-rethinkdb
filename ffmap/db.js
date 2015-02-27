@@ -39,6 +39,10 @@ function init(config) {
             .run(c)
             .then(log('Created index on nodeinfo.location for nodes table'), noop)
         );
+        ops.push(r.tableCreate('communities', { primaryKey: 'name' })
+            .run(c)
+            .then(log('Created table "communities"'), noop)
+        );
 
         return Promise.all(ops);
     }).then(function closeConnection(res) {

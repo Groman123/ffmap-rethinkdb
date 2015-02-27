@@ -42,7 +42,10 @@ io.sockets.on('connection', function (socket) {
         return function () {
             r.table(key)
                 //get rid of datasets older than 1h
-                .filter(r.row('timestamp').gt(r.now().sub(60 * 60)))
+                .filter(function (row) {
+                    return row('timestamp').gt(r.now().sub(60 * 60)) &&
+                         row('name').match('(?i)^' + self.prefixFilter || '');
+                })
                 .run(self.connection).then(function (data) {
                     socket.emit(key + ':reset');
                     data.toArray(function (err, nodes) {
@@ -75,6 +78,10 @@ io.sockets.on('connection', function (socket) {
         }, 200, { leading: false });
         r.table(key)
             .changes()
+            .filter(function (row) {
+                return row('timestamp').gt(r.now().sub(60 * 60)) &&
+                    row('new_val')('name').match('(?i)^' + self.prefixFilter || '');
+            })
             .run(self.connection).then(function (data) {
                 var updates = [];
                 data.each(function (err, node) {
@@ -99,6 +106,23 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('refresh:nodes', refresh('nodes'));
     socket.on('refresh:links', refresh('links'));
+    socket.on('communities:index', function () {
+        r.table('communities')
+            .run(self.connection).then(function (data) {
+                return data.toArray();
+            }).then(function (communities) {
+                socket.emit('communities:index', communities);
+            });
+    });
+    socket.on('communities:applyFilter', function (name) {
+        r.table('communities')
+            .get(name)
+            .run(self.connection).then(function (community) {
+                self.prefixFilter = community.prefix;
+                refresh('nodes')();
+                refresh('links')();
+            });
+    });
     r.connect(config.database).then(function (c) {
         self.connection = c;
 
